@@ -7,20 +7,26 @@ export class InputManager {
     this.getTiles = config.getTiles;
 
     this.isTracing = false;
+    this.lastTileIndex = null;
 
     this.pointerDownHandler = this.handlePointerDown.bind(this);
     this.pointerMoveHandler = this.handlePointerMove.bind(this);
     this.pointerUpHandler = this.handlePointerUp.bind(this);
 
-    scene.input.on("pointerdown", this.pointerDownHandler);
-    scene.input.on("pointermove", this.pointerMoveHandler);
-    scene.input.on("pointerup", this.pointerUpHandler);
-    scene.input.on("pointerupoutside", this.pointerUpHandler);
+    this.scene.input.on("pointerdown", this.pointerDownHandler);
+    this.scene.input.on("pointermove", this.pointerMoveHandler);
+    this.scene.input.on("pointerup", this.pointerUpHandler);
+    this.scene.input.on("pointerupoutside", this.pointerUpHandler);
   }
 
   handlePointerDown(pointer) {
     this.isTracing = true;
-    if (this.onTraceStart) this.onTraceStart(pointer);
+    this.lastTileIndex = null;
+
+    if (this.onTraceStart) {
+      this.onTraceStart(pointer);
+    }
+
     this.checkTile(pointer);
   }
 
@@ -31,8 +37,13 @@ export class InputManager {
 
   handlePointerUp(pointer) {
     if (!this.isTracing) return;
+
     this.isTracing = false;
-    if (this.onTraceEnd) this.onTraceEnd(pointer);
+    this.lastTileIndex = null;
+
+    if (this.onTraceEnd) {
+      this.onTraceEnd(pointer);
+    }
   }
 
   checkTile(pointer) {
@@ -42,22 +53,32 @@ export class InputManager {
     let bestTile = null;
     let bestDistance = Infinity;
 
-    tiles.forEach((tile) => {
-      const worldX = tile.parentContainer ? tile.parentContainer.x + tile.x : tile.x;
-      const worldY = tile.parentContainer ? tile.parentContainer.y + tile.y : tile.y;
+    for (const tile of tiles) {
+      const parentX = tile.parentContainer ? tile.parentContainer.x : 0;
+      const parentY = tile.parentContainer ? tile.parentContainer.y : 0;
+
+      const worldX = parentX + tile.x;
+      const worldY = parentY + tile.y;
+
       const dx = pointer.x - worldX;
       const dy = pointer.y - worldY;
-      const dist = Math.sqrt(dx * dx + dy * dy);
-      const snapRange = 46;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-      if (dist < snapRange && dist < bestDistance) {
-        bestDistance = dist;
+      const snapRange = Math.max((tile.width || 96) * 0.42, 46);
+
+      if (distance < snapRange && distance < bestDistance) {
+        bestDistance = distance;
         bestTile = tile;
       }
-    });
+    }
 
-    if (bestTile && this.onTileEnter) {
-      this.onTileEnter(bestTile);
+    if (!bestTile) return;
+
+    if (this.lastTileIndex === bestTile.index) return;
+    this.lastTileIndex = bestTile.index;
+
+    if (this.onTileEnter) {
+      this.onTileEnter(bestTile, pointer);
     }
   }
 
