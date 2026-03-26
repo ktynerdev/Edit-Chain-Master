@@ -7,7 +7,7 @@ export class ResultsScene extends Phaser.Scene {
   }
 
   create() {
-    const { width } = this.scale;
+    const { width, height } = this.scale;
     const results = this.registry.get("sessionResults") || {
       score: 0,
       highestRound: 1,
@@ -18,28 +18,26 @@ export class ResultsScene extends Phaser.Scene {
       rank: "Bronze Builder",
     };
 
-    this.createBackground();
+    this.add.rectangle(width / 2, height / 2, width, height, 0x071120);
 
     createTitleText(this, width / 2, 100, "SESSION RESULTS", 34);
-    createStatCard(this, width / 2, 350, 450, 520, results.rank.toUpperCase());
+    createStatCard(this, width / 2, 350, 450, 500, results.rank.toUpperCase());
 
     const lines = [
       `Final Score: ${results.score}`,
       `Highest Round: ${results.highestRound}`,
-      `Average Accuracy: ${results.averageAccuracy.toFixed(1)}%`,
+      `Average Accuracy: ${Number(results.averageAccuracy || 0).toFixed(1)}%`,
       `Best Combo: ${results.bestCombo}`,
       `Fastest Trace: ${results.fastestTrace ? `${results.fastestTrace.toFixed(2)}s` : "--"}`,
       `Total Mistakes: ${results.totalMistakes}`,
     ];
 
     lines.forEach((line, index) => {
-      this.add
-        .text(width / 2 - 165, 220 + index * 50, line, {
-          fontFamily: "Arial",
-          fontSize: "25px",
-          color: "#f2fbff",
-        })
-        .setOrigin(0, 0.5);
+      this.add.text(width / 2 - 165, 220 + index * 50, line, {
+        fontFamily: "Arial",
+        fontSize: "25px",
+        color: "#f2fbff",
+      }).setOrigin(0, 0.5);
     });
 
     createMainButton(this, width / 2, 820, "PLAY AGAIN", () => {
@@ -49,12 +47,5 @@ export class ResultsScene extends Phaser.Scene {
     createMainButton(this, width / 2, 900, "MAIN MENU", () => {
       this.scene.start("MenuScene");
     }, 300, 58, 18);
-  }
-
-  createBackground() {
-    const { width, height } = this.scale;
-    const bg = this.add.graphics();
-    bg.fillGradientStyle(0x071120, 0x142543, 0x091121, 0x050a14, 1);
-    bg.fillRect(0, 0, width, height);
   }
 }
