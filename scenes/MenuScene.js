@@ -1,3 +1,6 @@
+import { createMainButton } from "../ui/Buttons.js";
+import { createTitleText, createStatCard } from "../ui/Panels.js";
+
 export class MenuScene extends Phaser.Scene {
   constructor() {
     super("MenuScene");
@@ -5,40 +8,63 @@ export class MenuScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    const stats = this.registry.get("saveData") || {
+      bestScore: 0,
+      bestRound: 0,
+      bestAccuracy: 0,
+      longestCombo: 0,
+      sessionsPlayed: 0,
+    };
 
-    this.add.rectangle(width / 2, height / 2, width, height, 0x10213d);
+    this.add.rectangle(width / 2, height / 2, width, height, 0x0b1730);
 
-    this.add.text(width / 2, 160, "EDIT CHAIN MASTER", {
+    createTitleText(this, width / 2, 120, "EDIT CHAIN MASTER", 38);
+
+    this.add.text(width / 2, 168, "Trace Fast. Build Faster. Break the Pressure.", {
       fontFamily: "Arial",
-      fontSize: "34px",
-      color: "#ffffff",
+      fontSize: "18px",
+      color: "#d8f4ff",
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, 230, "SMOKE TEST", {
-      fontFamily: "Arial",
-      fontSize: "22px",
-      color: "#7dd3fc",
-    }).setOrigin(0.5);
+    createStatCard(this, width / 2, 285, 430, 172, "PLAYER STATS");
 
-    const button = this.add.rectangle(width / 2, 360, 240, 80, 0x2563eb)
-      .setStrokeStyle(3, 0x67e8f9)
-      .setInteractive();
+    const lines = [
+      `Best Score: ${stats.bestScore}`,
+      `Best Round: ${stats.bestRound}`,
+      `Best Accuracy: ${Number(stats.bestAccuracy || 0).toFixed(1)}%`,
+      `Longest Combo: ${stats.longestCombo}`,
+      `Sessions: ${stats.sessionsPlayed}`,
+    ];
 
-    const label = this.add.text(width / 2, 360, "TAP ME", {
-      fontFamily: "Arial",
-      fontSize: "28px",
-      color: "#ffffff",
-    }).setOrigin(0.5);
-
-    button.on("pointerdown", () => {
-      label.setText("WORKING");
-      this.add.text(width / 2, 470, "If you see this, Phaser and scenes are working.", {
+    lines.forEach((line, index) => {
+      this.add.text(width / 2 - 165, 245 + index * 28, line, {
         fontFamily: "Arial",
         fontSize: "20px",
-        color: "#a7f3d0",
-        align: "center",
-        wordWrap: { width: 360 },
-      }).setOrigin(0.5);
+        color: "#e6f6ff",
+      }).setOrigin(0, 0.5);
     });
+
+    createMainButton(this, width / 2, 540, "PLAY", () => {
+      this.scene.start("GameScene");
+    });
+
+    createMainButton(this, width / 2, 640, "HOW TO PLAY", () => {
+      this.scene.start("HowToPlayScene");
+    });
+
+    createMainButton(this, width / 2, 740, "STATS", () => {
+      this.scene.start("StatsScene");
+    });
+
+    createMainButton(this, width / 2, 840, "RESET STATS", () => {
+      this.registry.set("saveData", {
+        bestScore: 0,
+        bestRound: 0,
+        bestAccuracy: 0,
+        longestCombo: 0,
+        sessionsPlayed: 0,
+      });
+      this.scene.restart();
+    }, 300, 60, 18);
   }
 }
