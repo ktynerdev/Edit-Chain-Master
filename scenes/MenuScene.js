@@ -6,37 +6,38 @@ export class MenuScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
-    this.add.rectangle(width / 2, height / 2, width, height, 0x0b1730);
+    this.add.rectangle(width / 2, height / 2, width, height, 0x10213d);
 
-    this.add.text(width / 2, 150, "EDIT CHAIN MASTER", {
+    this.add.text(width / 2, 160, "EDIT CHAIN MASTER", {
       fontFamily: "Arial",
-      fontSize: "32px",
+      fontSize: "34px",
       color: "#ffffff",
     }).setOrigin(0.5);
 
-    this.add.text(width / 2, 230, "If you can see this, BootScene and MenuScene are working.", {
+    this.add.text(width / 2, 230, "SMOKE TEST", {
       fontFamily: "Arial",
-      fontSize: "18px",
-      color: "#aee8ff",
-      align: "center",
-      wordWrap: { width: 380 }
+      fontSize: "22px",
+      color: "#7dd3fc",
     }).setOrigin(0.5);
 
-    const btn = this.add.rectangle(width / 2, 360, 220, 70, 0x2563eb)
-      .setStrokeStyle(2, 0x67e8f9)
+    const button = this.add.rectangle(width / 2, 360, 240, 80, 0x2563eb)
+      .setStrokeStyle(3, 0x67e8f9)
       .setInteractive();
 
-    this.add.text(width / 2, 360, "TEST BUTTON", {
+    const label = this.add.text(width / 2, 360, "TAP ME", {
       fontFamily: "Arial",
-      fontSize: "24px",
+      fontSize: "28px",
       color: "#ffffff",
     }).setOrigin(0.5);
 
-    btn.on("pointerdown", () => {
-      this.add.text(width / 2, 460, "Button works", {
+    button.on("pointerdown", () => {
+      label.setText("WORKING");
+      this.add.text(width / 2, 470, "If you see this, Phaser and scenes are working.", {
         fontFamily: "Arial",
-        fontSize: "24px",
-        color: "#7fffd4",
+        fontSize: "20px",
+        color: "#a7f3d0",
+        align: "center",
+        wordWrap: { width: 360 },
       }).setOrigin(0.5);
     });
   }
