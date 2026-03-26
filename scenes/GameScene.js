@@ -20,7 +20,7 @@ export class GameScene extends Phaser.Scene {
     this.roundFailed = false;
     this.traceStartTime = 0;
     this.gridTiles = [];
-    this.pathGraphics = this.add.graphics();
+    this.pathGraphics = this.add.graphics().setDepth(7);
 
     this.createBackground();
 
@@ -36,6 +36,7 @@ export class GameScene extends Phaser.Scene {
 
   createBackground() {
     const { width, height } = this.scale;
+
     const bg = this.add.graphics();
     bg.fillGradientStyle(0x05101d, 0x0d1a32, 0x071120, 0x040a14, 1);
     bg.fillRect(0, 0, width, height);
@@ -59,7 +60,7 @@ export class GameScene extends Phaser.Scene {
         Phaser.Math.Between(50, 180),
         2,
         0x67e8f9,
-        Phaser.Math.FloatBetween(0.03, 0.10)
+        Phaser.Math.FloatBetween(0.03, 0.1)
       );
       line.angle = Phaser.Math.Between(-50, 50);
     }
@@ -69,28 +70,47 @@ export class GameScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     this.roundBanner = this.add.container(width / 2, 180).setDepth(20);
-    const bannerBg = this.add.image(0, 0, "panel-card").setDisplaySize(380, 120).setAlpha(0.95);
-    const bannerTitle = this.add.text(0, -14, "ROUND 1", {
-      fontFamily: "Arial Black, Arial",
-      fontSize: "34px",
-      color: "#f8fbff",
-      stroke: "#1b3d73",
-      strokeThickness: 6,
-    }).setOrigin(0.5);
-    const bannerSub = this.add.text(0, 28, "Watch the pattern", {
-      fontFamily: "Arial",
-      fontSize: "20px",
-      color: "#a7eaff",
-    }).setOrigin(0.5);
+
+    const bannerBg = this.add
+      .image(0, 0, "panel-card")
+      .setDisplaySize(380, 120)
+      .setAlpha(0.95);
+
+    const bannerTitle = this.add
+      .text(0, -14, "ROUND 1", {
+        fontFamily: "Arial Black, Arial",
+        fontSize: "34px",
+        color: "#f8fbff",
+        stroke: "#1b3d73",
+        strokeThickness: 6,
+      })
+      .setOrigin(0.5);
+
+    const bannerSub = this.add
+      .text(0, 28, "Watch the pattern", {
+        fontFamily: "Arial",
+        fontSize: "20px",
+        color: "#a7eaff",
+      })
+      .setOrigin(0.5);
 
     this.roundBanner.add([bannerBg, bannerTitle, bannerSub]);
     this.roundBanner.titleText = bannerTitle;
     this.roundBanner.subText = bannerSub;
     this.roundBanner.setVisible(false);
 
-    this.pauseBtn = createMainButton(this, width / 2, height - 54, "QUIT RUN", () => {
-      this.endSession();
-    }, 260, 58, 20);
+    this.pauseBtn = createMainButton(
+      this,
+      width / 2,
+      height - 54,
+      "QUIT RUN",
+      () => {
+        this.endSession();
+      },
+      260,
+      58,
+      20
+    );
     this.pauseBtn.setAlpha(0.92);
   }
 
@@ -100,7 +120,11 @@ export class GameScene extends Phaser.Scene {
 
     const roundConfig = this.difficultyManager.getRoundConfig(this.round);
     this.currentRoundConfig = roundConfig;
-    this.currentPattern = this.patternManager.generatePattern(roundConfig.gridSize, roundConfig.patternLength);
+    this.currentPattern = this.patternManager.generatePattern(
+      roundConfig.gridSize,
+      roundConfig.patternLength
+    );
+
     this.playerPath = [];
     this.visitedSet = new Set();
     this.wrongSelections = 0;
@@ -118,7 +142,11 @@ export class GameScene extends Phaser.Scene {
     });
 
     this.buildGrid(roundConfig.gridSize);
-    this.showRoundBanner(`ROUND ${this.round}`, `Grid ${roundConfig.gridSize}x${roundConfig.gridSize} • Pattern ${roundConfig.patternLength}`);
+
+    this.showRoundBanner(
+      `ROUND ${this.round}`,
+      `Grid ${roundConfig.gridSize}x${roundConfig.gridSize} • Pattern ${roundConfig.patternLength}`
+    );
 
     this.time.delayedCall(850, () => {
       this.playPatternPreview();
@@ -135,8 +163,24 @@ export class GameScene extends Phaser.Scene {
 
     this.boardContainer = this.add.container(0, 0).setDepth(5);
 
-    const shadow = this.add.rectangle(width / 2 + 6, startY + boardSize / 2 + 6, boardSize + 36, boardSize + 36, 0x000000, 0.28);
-    const boardFrame = this.add.rectangle(width / 2, startY + boardSize / 2, boardSize + 36, boardSize + 36, 0x08182c, 0.96)
+    const shadow = this.add.rectangle(
+      width / 2 + 6,
+      startY + boardSize / 2 + 6,
+      boardSize + 36,
+      boardSize + 36,
+      0x000000,
+      0.28
+    );
+
+    const boardFrame = this.add
+      .rectangle(
+        width / 2,
+        startY + boardSize / 2,
+        boardSize + 36,
+        boardSize + 36,
+        0x08182c,
+        0.96
+      )
       .setStrokeStyle(4, 0x67e8f9, 0.22);
 
     this.boardContainer.add([shadow, boardFrame]);
@@ -152,16 +196,28 @@ export class GameScene extends Phaser.Scene {
         const tile = this.add.container(x, y);
         tile.setSize(tileSize, tileSize);
 
-        const bg = this.add.image(0, 0, "tile-bg")
+        const bg = this.add
+          .image(0, 0, "tile-bg")
           .setDisplaySize(tileSize, tileSize)
           .setAlpha(0.95);
 
-        const gloss = this.add.rectangle(0, -tileSize * 0.2, tileSize * 0.7, tileSize * 0.18, 0xffffff, 0.10);
-        const indexText = this.add.text(0, 0, `${index + 1}`, {
-          fontFamily: "Arial Black, Arial",
-          fontSize: `${Math.floor(tileSize * 0.22)}px`,
-          color: "#dff7ff",
-        }).setOrigin(0.5).setAlpha(0.32);
+        const gloss = this.add.rectangle(
+          0,
+          -tileSize * 0.2,
+          tileSize * 0.7,
+          tileSize * 0.18,
+          0xffffff,
+          0.1
+        );
+
+        const indexText = this.add
+          .text(0, 0, `${index + 1}`, {
+            fontFamily: "Arial Black, Arial",
+            fontSize: `${Math.floor(tileSize * 0.22)}px`,
+            color: "#dff7ff",
+          })
+          .setOrigin(0.5)
+          .setAlpha(0.32);
 
         tile.add([bg, gloss, indexText]);
 
@@ -169,6 +225,8 @@ export class GameScene extends Phaser.Scene {
         tile.index = index;
         tile.gridX = x;
         tile.gridY = y;
+        tile.x = x;
+        tile.y = y;
         tile.isHighlighted = false;
         tile.isPlayerSelected = false;
         tile.setDepth(6);
@@ -203,6 +261,7 @@ export class GameScene extends Phaser.Scene {
 
   playPatternPreview() {
     this.showRoundBanner(`ROUND ${this.round}`, "Watch the pattern");
+
     const previewSteps = this.currentPattern.map((tileIndex, i) => ({
       delay: i * 420,
       tileIndex,
@@ -212,7 +271,9 @@ export class GameScene extends Phaser.Scene {
       this.time.delayedCall(step.delay, () => {
         const tile = this.gridTiles[step.tileIndex];
         if (!tile) return;
+
         this.highlightTile(tile, 0x67e8f9, 0.95, 1.08);
+
         this.time.delayedCall(250, () => {
           if (this.previewActive) {
             this.resetTileVisual(tile);
@@ -222,12 +283,15 @@ export class GameScene extends Phaser.Scene {
     });
 
     const totalPreviewDuration = this.currentRoundConfig.previewTime;
+
     this.time.delayedCall(totalPreviewDuration, () => {
       this.previewActive = false;
       this.currentRoundState = "trace";
       this.traceStartTime = this.time.now;
+
       this.showRoundBanner(`ROUND ${this.round}`, "Trace the pattern");
       this.hud.setObjective("Drag through the tiles in order");
+
       this.roundEndAt = this.time.now + this.currentRoundConfig.traceTime;
     });
   }
@@ -238,7 +302,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   handleTileEnter(tile) {
-    if (this.currentRoundState !== "trace" || this.roundFailed || this.previewActive) return;
+    if (
+      this.currentRoundState !== "trace" ||
+      this.roundFailed ||
+      this.previewActive
+    ) {
+      return;
+    }
+
     if (this.visitedSet.has(tile.index)) return;
 
     this.visitedSet.add(tile.index);
@@ -277,20 +348,26 @@ export class GameScene extends Phaser.Scene {
 
   drawPathToTile(tile) {
     const p = this.playerPath;
+    const worldX = this.boardContainer.x + tile.x;
+    const worldY = this.boardContainer.y + tile.y;
+
     if (p.length === 1) {
       this.pathGraphics.clear();
       this.pathGraphics.lineStyle(10, 0x67e8f9, 0.72);
       this.pathGraphics.beginPath();
-      this.pathGraphics.moveTo(tile.gridX + this.boardContainer.x, tile.gridY + this.boardContainer.y);
+      this.pathGraphics.moveTo(worldX, worldY);
       this.pathGraphics.strokePath();
       return;
     }
 
     const prevTile = this.gridTiles[p[p.length - 2]];
+    const prevWorldX = this.boardContainer.x + prevTile.x;
+    const prevWorldY = this.boardContainer.y + prevTile.y;
+
     this.pathGraphics.lineStyle(10, 0x67e8f9, 0.72);
     this.pathGraphics.beginPath();
-    this.pathGraphics.moveTo(prevTile.gridX + this.boardContainer.x, prevTile.gridY + this.boardContainer.y);
-    this.pathGraphics.lineTo(tile.gridX + this.boardContainer.x, tile.gridY + this.boardContainer.y);
+    this.pathGraphics.moveTo(prevWorldX, prevWorldY);
+    this.pathGraphics.lineTo(worldX, worldY);
     this.pathGraphics.strokePath();
   }
 
@@ -302,19 +379,38 @@ export class GameScene extends Phaser.Scene {
     this.currentRoundState = "resolve";
 
     const traceTime = (this.time.now - this.traceStartTime) / 1000;
-    const orderPerfect = this.currentPattern.every((value, index) => value === this.playerPath[index]);
-    const roundAccuracy = Math.max(
-      0,
-      (this.currentPattern.length - this.wrongSelections) / this.currentPattern.length
-    ) * 100;
+    const orderPerfect = this.currentPattern.every(
+      (value, index) => value === this.playerPath[index]
+    );
+    const roundAccuracy =
+      Math.max(
+        0,
+        (this.currentPattern.length - this.wrongSelections) /
+          this.currentPattern.length
+      ) * 100;
 
-    this.statsTracker.finalizeRound(roundAccuracy, traceTime, this.currentPattern.length, this.wrongSelections);
+    this.statsTracker.finalizeRound(
+      roundAccuracy,
+      traceTime,
+      this.currentPattern.length,
+      this.wrongSelections
+    );
 
     if (orderPerfect && this.wrongSelections === 0) {
-      this.scoreManager.registerSuccess(this.round, traceTime, this.currentPattern.length, true);
+      this.scoreManager.registerSuccess(
+        this.round,
+        traceTime,
+        this.currentPattern.length,
+        true
+      );
       this.flashBoardSuccess();
     } else if (orderPerfect) {
-      this.scoreManager.registerSuccess(this.round, traceTime, this.currentPattern.length, false);
+      this.scoreManager.registerSuccess(
+        this.round,
+        traceTime,
+        this.currentPattern.length,
+        false
+      );
     } else {
       this.scoreManager.breakCombo();
       this.roundFailed = true;
@@ -337,14 +433,19 @@ export class GameScene extends Phaser.Scene {
     const overlay = this.add.container(width / 2, height / 2).setDepth(30);
 
     const dim = this.add.rectangle(0, 0, width, height, 0x000000, 0.46);
-    const panel = this.add.image(0, 0, "panel-card").setDisplaySize(430, 340);
-    const title = this.add.text(0, -116, success ? "ROUND CLEAR" : "ROUND FAILED", {
-      fontFamily: "Arial Black, Arial",
-      fontSize: "30px",
-      color: success ? "#d1fae5" : "#ffe4ea",
-      stroke: "#11203a",
-      strokeThickness: 6,
-    }).setOrigin(0.5);
+    const panel = this.add
+      .image(0, 0, "panel-card")
+      .setDisplaySize(430, 340);
+
+    const title = this.add
+      .text(0, -116, success ? "ROUND CLEAR" : "ROUND FAILED", {
+        fontFamily: "Arial Black, Arial",
+        fontSize: "30px",
+        color: success ? "#d1fae5" : "#ffe4ea",
+        stroke: "#11203a",
+        strokeThickness: 6,
+      })
+      .setOrigin(0.5);
 
     const lines = [
       `Round: ${this.round}`,
@@ -358,21 +459,33 @@ export class GameScene extends Phaser.Scene {
     overlay.add([dim, panel, title]);
 
     lines.forEach((line, i) => {
-      const t = this.add.text(-150, -50 + i * 36, line, {
-        fontFamily: "Arial",
-        fontSize: "24px",
-        color: "#f3fbff",
-      }).setOrigin(0, 0.5);
+      const t = this.add
+        .text(-150, -50 + i * 36, line, {
+          fontFamily: "Arial",
+          fontSize: "24px",
+          color: "#f3fbff",
+        })
+        .setOrigin(0, 0.5);
       overlay.add(t);
     });
 
     const nextLabel = this.round >= this.maxRounds ? "FINISH" : "NEXT ROUND";
-    const nextBtn = createMainButton(this, 0, 110, nextLabel, () => {
-      overlay.destroy();
-      this.advanceRound();
-    }, 240, 62, 20);
-    overlay.add(nextBtn);
 
+    const nextBtn = createMainButton(
+      this,
+      0,
+      110,
+      nextLabel,
+      () => {
+        overlay.destroy();
+        this.advanceRound();
+      },
+      240,
+      62,
+      20
+    );
+
+    overlay.add(nextBtn);
     this.roundSummaryOverlay = overlay;
   }
 
@@ -415,6 +528,7 @@ export class GameScene extends Phaser.Scene {
   highlightTile(tile, color, alpha = 1, scale = 1.04) {
     tile.bg.setTint(color);
     tile.bg.setAlpha(alpha);
+
     this.tweens.killTweensOf(tile);
     this.tweens.add({
       targets: tile,
@@ -441,7 +555,45 @@ export class GameScene extends Phaser.Scene {
   getPressurePercent() {
     if (!this.roundEndAt || this.currentRoundState !== "trace") return 100;
     const remaining = Math.max(0, this.roundEndAt - this.time.now);
-    return Phaser.Math.Clamp((remaining / this.currentRoundConfig.traceTime) * 100, 0, 100);
+    return Phaser.Math.Clamp(
+      (remaining / this.currentRoundConfig.traceTime) * 100,
+      0,
+      100
+    );
+  }
+
+  showRoundBanner(title, subtitle) {
+    this.roundBanner.titleText.setText(title);
+    this.roundBanner.subText.setText(subtitle);
+    this.roundBanner.setVisible(true);
+    this.roundBanner.setAlpha(0);
+    this.roundBanner.setScale(0.94);
+
+    this.tweens.killTweensOf(this.roundBanner);
+
+    this.tweens.add({
+      targets: this.roundBanner,
+      alpha: 1,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 220,
+      ease: "Back.Out",
+      onComplete: () => {
+        this.time.delayedCall(700, () => {
+          if (!this.roundBanner.scene) return;
+          this.tweens.add({
+            targets: this.roundBanner,
+            alpha: 0,
+            duration: 220,
+            onComplete: () => {
+              if (this.roundBanner) {
+                this.roundBanner.setVisible(false);
+              }
+            },
+          });
+        });
+      },
+    });
   }
 
   update() {
@@ -460,9 +612,17 @@ export class GameScene extends Phaser.Scene {
       if (pressure <= 0) {
         this.roundFailed = true;
         this.scoreManager.breakCombo();
+
         const traceTime = (this.time.now - this.traceStartTime) / 1000;
         const roundAccuracy = this.statsTracker.getLiveAccuracy();
-        this.statsTracker.finalizeRound(roundAccuracy, traceTime, this.playerPath.length, this.wrongSelections);
+
+        this.statsTracker.finalizeRound(
+          roundAccuracy,
+          traceTime,
+          this.playerPath.length,
+          this.wrongSelections
+        );
+
         this.showRoundSummary(false, traceTime, roundAccuracy);
         this.currentRoundState = "resolve";
       }
