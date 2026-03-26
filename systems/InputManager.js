@@ -43,12 +43,12 @@ export class InputManager {
     let bestDistance = Infinity;
 
     tiles.forEach((tile) => {
-      const dx = pointer.x - (tile.gridX + (tile.parentContainer?.x || 0));
-      const dy = pointer.y - (tile.gridY + (tile.parentContainer?.y || 0));
+      const worldX = tile.parentContainer ? tile.parentContainer.x + tile.x : tile.x;
+      const worldY = tile.parentContainer ? tile.parentContainer.y + tile.y : tile.y;
+      const dx = pointer.x - worldX;
+      const dy = pointer.y - worldY;
       const dist = Math.sqrt(dx * dx + dy * dy);
-
-      const radius = tile.width ? tile.width * 0.45 : 42;
-      const snapRange = Math.max(radius, 42);
+      const snapRange = 46;
 
       if (dist < snapRange && dist < bestDistance) {
         bestDistance = dist;
